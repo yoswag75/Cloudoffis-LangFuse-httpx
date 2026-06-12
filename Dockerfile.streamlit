@@ -1,0 +1,33 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+ENV CMAKE_BUILD_PARALLEL_LEVEL=8
+
+RUN pip install uv
+
+COPY pyproject.toml .
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN uv pip install --system \
+    streamlit \
+    "langfuse>=4.7.1" \
+    httpx \
+    python-dotenv \
+    llama-cpp-python
+
+COPY app.py .
+COPY langfuse_utils.py .
+COPY llm_httpx.py .
+
+EXPOSE 8502
+
+CMD ["streamlit", "run", "app.py", \
+     "--server.address=0.0.0.0", \
+     "--server.port=8502"]

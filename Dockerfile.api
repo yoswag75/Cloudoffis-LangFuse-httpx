@@ -1,0 +1,27 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+ENV CMAKE_BUILD_PARALLEL_LEVEL=8
+
+RUN pip install uv
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN uv pip install --system \
+    fastapi \
+    uvicorn \
+    httpx \
+    python-dotenv \
+    llama-cpp-python
+
+COPY api/main.py .
+
+EXPOSE 8000
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
